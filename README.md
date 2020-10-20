@@ -1,17 +1,43 @@
-package com.example.demo.mapper;
+## 这是springboot整合mybatis的小项目
+### mybatis采用注解模式
+### 使用了一对一 @one 和一对多 @many 方式
 
-import com.example.demo.pojo.Orders;
-import com.example.demo.pojo.Users;
-import org.apache.ibatis.annotations.*;
-import org.springframework.stereotype.Component;
+## 简要介绍
+> pojo对象有两个，分别是Orders和Users，如下所示
+```java
+public class Orders {
+    private Integer id;
+    private Double total;
+    private String good;
 
-import java.util.List;
+    private Users users;
+}
 
-/**
- * Author :  冯宇豪
- * Date:     2020/7/15
- * Description:
- */
+public class Users {
+    private Integer id;
+    private String name;
+    private Integer age;
+
+    // 当前用户具有的订单
+    private List<Orders> ordersList;
+}
+```
+> mapper注解如下：
+```java
+@Mapper
+public interface OrdersMapper {
+
+    @Select("select * from orders")
+    @Results({@Result(property = "id",column = "id", id = true),
+            @Result(property = "total",column = "total"),
+            @Result(property = "good",column = "good"),
+    @Result(property = "users",column = "uid",one = @One(select = "com.example.demo.mapper.UsersMapper.selectUsersById"))})
+    List<Orders> findAll();
+
+    @Select("select * from orders where uid=#{id}")
+    List<Orders> findOrderById(@Param("id") Integer id);
+}
+
 @Mapper
 public interface UsersMapper {
     @Insert("insert into users(name,age) values (#{name},#{age})")
@@ -46,3 +72,4 @@ public interface UsersMapper {
     List<Users> selectAllOrders();
 
 }
+```
